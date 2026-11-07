@@ -728,9 +728,8 @@ function renderComparison() {
             <p>${getComparisonConclusion(fcfs, srtf)}</p>
         </section>
 
-        <!-- 3 Tombol Aksi -->
+        <!-- Tombol Aksi -->
         <div class="action-buttons-group">
-            <button class="btn-action-brown" onclick="alert('Hasil simulasi tersimpan di Riwayat!')">Simpan Hasil</button>
             <button class="btn-action-brown" onclick="renderInput()">Ulangi Simulasi</button>
             <button class="btn-action-brown" onclick="renderHome()">Kembali ke Beranda</button>
         </div>
@@ -1044,7 +1043,7 @@ function renderAbout() {
                     <li>Almand Zaky. S (2501020114)</li>
                     <li>Virtuando Jagad Saputrana (2501020106)</li>
                     <li>Fikri Restu Nugraha (2501020109)</li>
-                    <li>Raihan Ahza Hamizan (2501020104)</li>
+                    <li>Raihan Parsa Ahza Hamizan (2501020104)</li>
                     <li>Yazira Sartika (2501020103)</li>
                 </ul>
             </section>
