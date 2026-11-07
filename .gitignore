@@ -1,0 +1,22 @@
+# Node.js
+node_modules/
+
+# Android generated files
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+
+# Signing credentials
+*.jks
+*.keystore
+keystore.properties
+key.properties
+
+# Generated APK files
+*.apk
+*.aab
+
+# Operating system
+.DS_Store
+Thumbs.db

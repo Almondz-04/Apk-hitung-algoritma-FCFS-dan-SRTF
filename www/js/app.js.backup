@@ -1,0 +1,435 @@
+const app = document.getElementById("app");
+
+let selectedAlgorithm = "FCFS";
+let processes = [
+    { id: "P1", arrival: 0, burst: 5 },
+    { id: "P2", arrival: 1, burst: 3 },
+    { id: "P3", arrival: 2, burst: 2 }
+];
+
+let lastResult = null;
+
+function renderHome() {
+    app.innerHTML = `
+        <header class="welcome">
+            <div class="logo-small">AVIRA</div>
+            <p class="greeting">Halo,</p>
+            <h1>Selamat Datang<br>di AVIRA</h1>
+            <p class="description">
+                Simulasi algoritma penjadwalan proses CPU
+                yang presisi dan mudah dipahami.
+            </p>
+        </header>
+
+        <section class="algorithm-list">
+            <button class="algorithm-card fcfs"
+                onclick="openAlgorithm('FCFS')">
+                <div class="algorithm-icon">▤</div>
+                <div class="algorithm-info">
+                    <h2>FCFS</h2>
+                    <p>First Come First Served</p>
+                </div>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="algorithm-card srtf"
+                onclick="openAlgorithm('SRTF')">
+                <div class="algorithm-icon">ϟ</div>
+                <div class="algorithm-info">
+                    <h2>SRTF</h2>
+                    <p>Shortest Remaining Time First</p>
+                </div>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="algorithm-card comparison"
+                onclick="openAlgorithm('Comparison')">
+                <div class="algorithm-icon">▥</div>
+                <div class="algorithm-info">
+                    <h2>Bandingkan Algoritma</h2>
+                    <p>Lihat perbedaan hasil FCFS dan SRTF</p>
+                </div>
+                <span class="arrow">›</span>
+            </button>
+        </section>
+
+        ${renderNavigation("home")}
+    `;
+}
+
+function renderNavigation(activePage) {
+    return `
+        <nav class="bottom-nav">
+            <button class="nav-item ${activePage === "home" ? "active" : ""}"
+                onclick="navigate('home')">
+                <span>⌂</span>
+                <small>Beranda</small>
+            </button>
+
+            <button class="nav-item ${activePage === "history" ? "active" : ""}"
+                onclick="navigate('history')">
+                <span>◷</span>
+                <small>Riwayat</small>
+            </button>
+
+            <button class="nav-item ${activePage === "about" ? "active" : ""}"
+                onclick="navigate('about')">
+                <span>ⓘ</span>
+                <small>Tentang</small>
+            </button>
+        </nav>
+    `;
+}
+
+function openAlgorithm(algorithm) {
+    if (algorithm === "Comparison") {
+        alert("Fitur perbandingan akan kita buat setelah FCFS dan SRTF selesai.");
+        return;
+    }
+
+    selectedAlgorithm = algorithm;
+
+    if (algorithm === "SRTF") {
+        alert("Kita akan mengaktifkan SRTF setelah FCFS selesai.");
+        return;
+    }
+
+    processes = [
+        { id: "P1", arrival: 0, burst: 5 },
+        { id: "P2", arrival: 1, burst: 3 },
+        { id: "P3", arrival: 2, burst: 2 }
+    ];
+
+    renderInput();
+}
+
+function renderInput() {
+    app.innerHTML = `
+        <header class="page-header">
+            <button class="back-button" onclick="renderHome()">‹</button>
+            <div>
+                <p class="greeting">Simulasi algoritma</p>
+                <h1>${selectedAlgorithm}</h1>
+            </div>
+        </header>
+
+        <section class="input-section">
+            <h2>Input Proses</h2>
+            <p class="section-description">
+                Masukkan Arrival Time dan Burst Time setiap proses.
+            </p>
+
+            <div class="process-header">
+                <span>Proses</span>
+                <span>Arrival Time</span>
+                <span>Burst Time</span>
+                <span></span>
+            </div>
+
+            <div id="process-list">
+                ${processes.map((process, index) => `
+                    <div class="process-row">
+                        <strong>${process.id}</strong>
+
+                        <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value="${process.arrival}"
+                            aria-label="Arrival Time ${process.id}"
+                            onchange="updateProcess(${index}, 'arrival', this.value)"
+                        >
+
+                        <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value="${process.burst}"
+                            aria-label="Burst Time ${process.id}"
+                            onchange="updateProcess(${index}, 'burst', this.value)"
+                        >
+
+                        <button class="remove-button"
+                            onclick="removeProcess(${index})"
+                            aria-label="Hapus ${process.id}">×</button>
+                    </div>
+                `).join("")}
+            </div>
+
+            <button class="add-button" onclick="addProcess()">
+                + Tambah Proses
+            </button>
+
+            <button class="primary-button" onclick="runSimulation()">
+                Jalankan Simulasi
+            </button>
+        </section>
+
+        ${renderNavigation("")}
+    `;
+}
+
+function updateProcess(index, field, value) {
+    processes[index][field] = value === "" ? "" : Number(value);
+}
+
+function addProcess() {
+    const nextNumber = processes.length + 1;
+
+    processes.push({
+        id: `P${nextNumber}`,
+        arrival: 0,
+        burst: 1
+    });
+
+    renderInput();
+}
+
+function removeProcess(index) {
+    if (processes.length <= 1) {
+        alert("Minimal harus ada satu proses.");
+        return;
+    }
+
+    processes.splice(index, 1);
+
+    // Renumber process IDs after deletion.
+    processes.forEach((process, i) => {
+        process.id = `P${i + 1}`;
+    });
+
+    renderInput();
+}
+
+function runSimulation() {
+    if (processes.length === 0) {
+        alert("Tambahkan minimal satu proses.");
+        return;
+    }
+
+    const valid = processes.every(process =>
+        Number.isInteger(process.arrival) &&
+        process.arrival >= 0 &&
+        Number.isInteger(process.burst) &&
+        process.burst > 0
+    );
+
+    if (!valid) {
+        alert("Arrival Time harus bilangan bulat >= 0 dan Burst Time harus bilangan bulat > 0.");
+        return;
+    }
+
+    if (selectedAlgorithm === "FCFS") {
+        lastResult = calculateFCFS(processes);
+        renderResults();
+    }
+}
+
+function calculateFCFS(input) {
+    const sorted = input
+        .map((process, index) => ({ ...process, originalIndex: index }))
+        .sort((a, b) =>
+            a.arrival - b.arrival ||
+            a.originalIndex - b.originalIndex
+        );
+
+    let currentTime = 0;
+    const results = [];
+    const gantt = [];
+
+    sorted.forEach(process => {
+        const start = Math.max(currentTime, process.arrival);
+        const completion = start + process.burst;
+
+        if (currentTime < process.arrival) {
+            gantt.push({
+                id: "Idle",
+                start: currentTime,
+                end: process.arrival
+            });
+        }
+
+        gantt.push({
+            id: process.id,
+            start,
+            end: completion
+        });
+
+        const turnaround = completion - process.arrival;
+        const waiting = turnaround - process.burst;
+        const response = start - process.arrival;
+
+        results.push({
+            id: process.id,
+            arrival: process.arrival,
+            burst: process.burst,
+            start,
+            completion,
+            turnaround,
+            waiting,
+            response
+        });
+
+        currentTime = completion;
+    });
+
+    const count = results.length;
+
+    return {
+        results,
+        gantt,
+        averageWaiting: results.reduce((sum, p) => sum + p.waiting, 0) / count,
+        averageTurnaround: results.reduce((sum, p) => sum + p.turnaround, 0) / count,
+        averageResponse: results.reduce((sum, p) => sum + p.response, 0) / count
+    };
+}
+
+function getProcessColor(processId) {
+    const colors = [
+        "#789BB2", // Blue
+        "#82A68E", // Green
+        "#C9875B", // Orange
+        "#A58BB5", // Purple
+        "#D39A8C", // Dusty pink
+        "#9C705B", // Brown
+        "#8BA6A0"  // Teal
+    ];
+
+    if (processId === "Idle") {
+        return "#A9A19A";
+    }
+
+    const processNumber = Number(processId.replace("P", ""));
+    return colors[(processNumber - 1) % colors.length];
+}
+
+function renderResults() {
+    const result = lastResult;
+    const totalTime = result.gantt[result.gantt.length - 1].end;
+    const pixelPerUnit = 48;
+    const chartWidth = totalTime * pixelPerUnit;
+
+    app.innerHTML = `
+        <header class="page-header">
+            <button class="back-button" onclick="renderInput()">‹</button>
+            <div>
+                <p class="greeting">Hasil simulasi</p>
+                <h1>${selectedAlgorithm}</h1>
+            </div>
+        </header>
+
+        <section class="result-section">
+            <h2>Gantt Chart</h2>
+            <p class="section-description">
+                Urutan eksekusi proses pada CPU.
+            </p>
+
+            <div class="gantt-scroll">
+                <div class="gantt-chart" style="width: ${chartWidth}px;">
+                    ${result.gantt.map(item => {
+                        const duration = item.end - item.start;
+
+                        return `
+                            <div
+                                class="gantt-item ${item.id === "Idle" ? "idle" : ""}"
+                                style="
+                                    flex: 0 0 ${duration * pixelPerUnit}px;
+                                    background: ${getProcessColor(item.id)};
+                                "
+                            >
+                                <strong>${item.id}</strong>
+                                <small>${item.start} – ${item.end}</small>
+                            </div>
+                        `;
+                    }).join("")}
+                </div>
+
+                <div class="gantt-timeline" style="width: ${chartWidth}px;">
+                    ${result.gantt.map(item => {
+                        const duration = item.end - item.start;
+
+                        return `
+                            <span style="flex: 0 0 ${duration * pixelPerUnit}px;">
+                                ${item.start}
+                            </span>
+                        `;
+                    }).join("")}
+
+                    <span class="final-time">
+                        ${totalTime}
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <section class="result-section">
+            <h2>Hasil Perhitungan</h2>
+
+            <div class="table-wrapper">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Proses</th>
+                            <th>AT</th>
+                            <th>BT</th>
+                            <th>CT</th>
+                            <th>TAT</th>
+                            <th>WT</th>
+                            <th>RT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${result.results.map(p => `
+                            <tr>
+                                <td>${p.id}</td>
+                                <td>${p.arrival}</td>
+                                <td>${p.burst}</td>
+                                <td>${p.completion}</td>
+                                <td>${p.turnaround}</td>
+                                <td>${p.waiting}</td>
+                                <td>${p.response}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="average-card">
+            <h2>Rata-rata</h2>
+
+            <div class="average-row">
+                <span>Waiting Time</span>
+                <strong>${result.averageWaiting.toFixed(2)}</strong>
+            </div>
+
+            <div class="average-row">
+                <span>Turnaround Time</span>
+                <strong>${result.averageTurnaround.toFixed(2)}</strong>
+            </div>
+
+            <div class="average-row">
+                <span>Response Time</span>
+                <strong>${result.averageResponse.toFixed(2)}</strong>
+            </div>
+        </section>
+
+        <button class="primary-button" onclick="renderInput()">
+            Kembali ke Input
+        </button>
+
+        ${renderNavigation("")}
+    `;
+}
+
+function navigate(page) {
+    if (page === "home") {
+        renderHome();
+    } else if (page === "history") {
+        alert("Fitur riwayat akan kita buat selanjutnya.");
+    } else if (page === "about") {
+        alert("Halaman Tentang AVIRA akan kita buat selanjutnya.");
+    }
+}
+
+renderHome();

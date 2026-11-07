@@ -1,0 +1,1067 @@
+const app = document.getElementById("app");
+
+let selectedAlgorithm = "FCFS";
+let processes = [
+    { id: "P1", arrival: 0, burst: 5 },
+    { id: "P2", arrival: 1, burst: 3 },
+    { id: "P3", arrival: 2, burst: 2 }
+];
+
+let lastResult = null;
+let viewingHistory = false;
+
+const HISTORY_KEY = "avira_simulation_history";
+let comparisonResult = null;
+
+// Get saved simulation history
+function getSimulationHistory() {
+    try {
+        const history = localStorage.getItem(HISTORY_KEY);
+
+        return history ? JSON.parse(history) : [];
+    } catch (error) {
+        console.error("Failed to load history:", error);
+        return [];
+    }
+}
+
+
+// Save history to localStorage
+function saveSimulationHistory(history) {
+    try {
+        localStorage.setItem(
+            HISTORY_KEY,
+            JSON.stringify(history)
+        );
+
+        return true;
+    } catch (error) {
+        console.error("Failed to save history:", error);
+
+        alert("Gagal menyimpan riwayat simulasi.");
+
+        return false;
+    }
+}
+
+
+// Save one simulation
+function saveSimulation(algorithm, processData, resultData) {
+    const history = getSimulationHistory();
+
+    const newRecord = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+
+        algorithm: algorithm,
+
+        date: new Date().toISOString(),
+
+        processes: JSON.parse(JSON.stringify(processData)),
+
+        result: JSON.parse(JSON.stringify(resultData))
+    };
+
+    history.unshift(newRecord);
+
+    saveSimulationHistory(history);
+}
+
+function renderHome() {
+    app.innerHTML = `
+        <header class="welcome">
+            <div class="logo-small">AVIRA</div>
+            <p class="greeting">Halo,</p>
+            <h1>Selamat Datang<br>di AVIRA</h1>
+            <p class="description">
+                Simulasi algoritma penjadwalan proses CPU
+                yang presisi dan mudah dipahami.
+            </p>
+        </header>
+
+        <section class="algorithm-list">
+            <button class="algorithm-card fcfs"
+                onclick="openAlgorithm('FCFS')">
+                <div class="algorithm-icon">▤</div>
+                <div class="algorithm-info">
+                    <h2>FCFS</h2>
+                    <p>First Come First Served</p>
+                </div>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="algorithm-card srtf"
+                onclick="openAlgorithm('SRTF')">
+                <div class="algorithm-icon">ϟ</div>
+                <div class="algorithm-info">
+                    <h2>SRTF</h2>
+                    <p>Shortest Remaining Time First</p>
+                </div>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="algorithm-card comparison"
+                onclick="openAlgorithm('Comparison')">
+                <div class="algorithm-icon">▥</div>
+                <div class="algorithm-info">
+                    <h2>Bandingkan Algoritma</h2>
+                    <p>Lihat perbedaan hasil FCFS dan SRTF</p>
+                </div>
+                <span class="arrow">›</span>
+            </button>
+        </section>
+
+        ${renderNavigation("home")}
+    `;
+}
+
+function renderHistory() {
+    const history = getSimulationHistory();
+
+    app.innerHTML = `
+        <header class="page-header">
+            <div>
+                <p class="greeting">Aktivitas simulasi</p>
+                <h1>Riwayat</h1>
+            </div>
+        </header>
+
+        <section class="history-section">
+
+            <div class="history-heading">
+                <div>
+                    <h2>Riwayat Simulasi</h2>
+                    <p class="section-description">
+                        Semua hasil simulasi yang pernah kamu jalankan.
+                    </p>
+                </div>
+
+                ${history.length > 0 ? `
+                    <button
+                        class="clear-history-button"
+                        onclick="clearHistory()"
+                    >
+                        Hapus Semua
+                    </button>
+                ` : ""}
+            </div>
+
+            ${history.length === 0 ? `
+                <div class="empty-history">
+                    <div class="empty-history-icon">◷</div>
+
+                    <h3>Belum Ada Riwayat</h3>
+
+                    <p>
+                        Hasil simulasi yang kamu jalankan
+                        akan muncul di sini.
+                    </p>
+
+                    <button
+                        class="primary-button"
+                        onclick="renderHome()"
+                    >
+                        Mulai Simulasi
+                    </button>
+                </div>
+            ` : `
+                <div class="history-list">
+
+                    ${history.map(record => {
+                        const isComparison =
+                            record.algorithm === "Comparison";
+
+                        const result = isComparison
+                            ? record.result.fcfs
+                            : record.result;
+
+                        const averageWaiting =
+                            result.averageWaiting;
+
+                        const date = new Date(
+                            record.date
+                        ).toLocaleString("id-ID", {
+                            dateStyle: "medium",
+                            timeStyle: "short"
+                        });
+
+                        return `
+                            <article class="history-card">
+
+                                <div class="history-card-header">
+
+                                    <div>
+                                        <span class="history-algorithm ${
+                                            isComparison
+                                                ? "history-comparison"
+                                                : record.algorithm.toLowerCase()
+                                        }">
+                                            ${isComparison
+                                                ? "FCFS vs SRTF"
+                                                : record.algorithm
+                                            }
+                                        </span>
+
+                                        <p class="history-date">
+                                            ${date}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        class="delete-history-button"
+                                        onclick="deleteHistoryRecord('${record.id}')"
+                                        aria-label="Hapus riwayat"
+                                    >
+                                        ×
+                                    </button>
+
+                                </div>
+
+                                <div class="history-details">
+                                    <span>
+                                        ${record.processes.length} Proses
+                                    </span>
+
+                                    <span>
+                                        Average WT:
+                                        <strong>
+                                            ${averageWaiting.toFixed(2)}
+                                        </strong>
+                                    </span>
+                                </div>
+
+                                <button
+                                    class="history-view-button"
+                                    onclick="viewHistoryRecord('${record.id}')"
+                                >
+                                    Lihat Hasil
+                                    <span>›</span>
+                                </button>
+
+                            </article>
+                        `;
+                    }).join("")}
+
+                </div>
+            `}
+
+        </section>
+
+        ${renderNavigation("history")}
+    `;
+}
+
+// Reopen previous simulation
+function viewHistoryRecord(id) {
+    const history = getSimulationHistory();
+
+    const record = history.find(
+        item => item.id === id
+    );
+
+    if (!record) {
+        alert("Riwayat simulasi tidak ditemukan.");
+        renderHistory();
+        return;
+    }
+
+    selectedAlgorithm = record.algorithm;
+
+    processes = JSON.parse(
+        JSON.stringify(record.processes)
+    );
+
+    viewingHistory = true;
+
+    if (record.algorithm === "Comparison") {
+        comparisonResult = record.result;
+        renderComparison();
+    } else {
+        lastResult = record.result;
+        renderResults();
+    }
+}
+
+
+// Delete one record
+function deleteHistoryRecord(id) {
+    const confirmed = confirm(
+        "Apakah kamu yakin ingin menghapus riwayat ini?"
+    );
+
+    if (!confirmed) return;
+
+    const history = getSimulationHistory();
+
+    const updatedHistory = history.filter(
+        record => record.id !== id
+    );
+
+    saveSimulationHistory(updatedHistory);
+
+    renderHistory();
+}
+
+
+// Delete all records
+function clearHistory() {
+    const confirmed = confirm(
+        "Apakah kamu yakin ingin menghapus semua riwayat simulasi?"
+    );
+
+    if (!confirmed) return;
+
+    saveSimulationHistory([]);
+
+    renderHistory();
+}
+
+function renderNavigation(activePage) {
+    return `
+        <nav class="bottom-nav">
+            <button class="nav-item ${activePage === "home" ? "active" : ""}"
+                onclick="navigate('home')">
+                <span>⌂</span>
+                <small>Beranda</small>
+            </button>
+
+            <button class="nav-item ${activePage === "history" ? "active" : ""}"
+                onclick="navigate('history')">
+                <span>◷</span>
+                <small>Riwayat</small>
+            </button>
+
+            <button class="nav-item ${activePage === "about" ? "active" : ""}"
+                onclick="navigate('about')">
+                <span>ⓘ</span>
+                <small>Tentang</small>
+            </button>
+        </nav>
+    `;
+}
+
+function openAlgorithm(algorithm) {
+    selectedAlgorithm = algorithm;
+
+    processes = [
+        { id: "P1", arrival: 0, burst: 5 },
+        { id: "P2", arrival: 1, burst: 3 },
+        { id: "P3", arrival: 2, burst: 2 }
+    ];
+
+    comparisonResult = null;
+
+    renderInput();
+}
+
+function renderInput() {
+    app.innerHTML = `
+        <header class="page-header">
+            <button class="back-button" onclick="renderHome()">‹</button>
+            <div>
+                <p class="greeting">Simulasi algoritma</p>
+                <h1>${selectedAlgorithm}</h1>
+            </div>
+        </header>
+
+        <section class="input-section">
+            <h2>Input Proses</h2>
+            <p class="section-description">
+                Masukkan Arrival Time dan Burst Time setiap proses.
+            </p>
+
+            <div class="process-header">
+                <span>Proses</span>
+                <span>Arrival Time</span>
+                <span>Burst Time</span>
+                <span></span>
+            </div>
+
+            <div id="process-list">
+                ${processes.map((process, index) => `
+                    <div class="process-row">
+                        <strong>${process.id}</strong>
+
+                        <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value="${process.arrival}"
+                            aria-label="Arrival Time ${process.id}"
+                            onchange="updateProcess(${index}, 'arrival', this.value)"
+                        >
+
+                        <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value="${process.burst}"
+                            aria-label="Burst Time ${process.id}"
+                            onchange="updateProcess(${index}, 'burst', this.value)"
+                        >
+
+                        <button class="remove-button"
+                            onclick="removeProcess(${index})"
+                            aria-label="Hapus ${process.id}">×</button>
+                    </div>
+                `).join("")}
+            </div>
+
+            <button class="add-button" onclick="addProcess()">
+                + Tambah Proses
+            </button>
+
+            <button class="primary-button" onclick="runSimulation()">
+                Jalankan Simulasi
+            </button>
+        </section>
+
+        ${renderNavigation("")}
+    `;
+}
+
+function updateProcess(index, field, value) {
+    processes[index][field] = value === "" ? "" : Number(value);
+}
+
+function addProcess() {
+    const nextNumber = processes.length + 1;
+
+    processes.push({
+        id: `P${nextNumber}`,
+        arrival: 0,
+        burst: 1
+    });
+
+    renderInput();
+}
+
+function removeProcess(index) {
+    if (processes.length <= 1) {
+        alert("Minimal harus ada satu proses.");
+        return;
+    }
+
+    processes.splice(index, 1);
+
+    // Renumber process IDs after deletion.
+    processes.forEach((process, i) => {
+        process.id = `P${i + 1}`;
+    });
+
+    renderInput();
+}
+
+function runSimulation() {
+    if (processes.length === 0) {
+        alert("Tambahkan minimal satu proses.");
+        return;
+    }
+
+    const valid = processes.every(process =>
+        Number.isInteger(process.arrival) &&
+        process.arrival >= 0 &&
+        Number.isInteger(process.burst) &&
+        process.burst > 0
+    );
+
+    if (!valid) {
+        alert(
+            "Arrival Time harus bilangan bulat >= 0 " +
+            "dan Burst Time harus bilangan bulat > 0."
+        );
+        return;
+    }
+
+    viewingHistory = false;
+
+    if (selectedAlgorithm === "Comparison") {
+        comparisonResult = {
+            fcfs: calculateFCFS(processes),
+            srtf: calculateSRTF(processes)
+        };
+
+        saveSimulation(
+            "Comparison",
+            processes,
+            comparisonResult
+        );
+
+        renderComparison();
+        return;
+    }
+
+    if (selectedAlgorithm === "FCFS") {
+        lastResult = calculateFCFS(processes);
+    } else if (selectedAlgorithm === "SRTF") {
+        lastResult = calculateSRTF(processes);
+    }
+
+    saveSimulation(
+        selectedAlgorithm,
+        processes,
+        lastResult
+    );
+
+    renderResults();
+}
+
+function calculateFCFS(input) {
+    const sorted = input
+        .map((process, index) => ({ ...process, originalIndex: index }))
+        .sort((a, b) =>
+            a.arrival - b.arrival ||
+            a.originalIndex - b.originalIndex
+        );
+
+    let currentTime = 0;
+    const results = [];
+    const gantt = [];
+
+    sorted.forEach(process => {
+        const start = Math.max(currentTime, process.arrival);
+        const completion = start + process.burst;
+
+        if (currentTime < process.arrival) {
+            gantt.push({
+                id: "Idle",
+                start: currentTime,
+                end: process.arrival
+            });
+        }
+
+        gantt.push({
+            id: process.id,
+            start,
+            end: completion
+        });
+
+        const turnaround = completion - process.arrival;
+        const waiting = turnaround - process.burst;
+        const response = start - process.arrival;
+
+        results.push({
+            id: process.id,
+            arrival: process.arrival,
+            burst: process.burst,
+            start,
+            completion,
+            turnaround,
+            waiting,
+            response
+        });
+
+        currentTime = completion;
+    });
+
+    const count = results.length;
+
+    return {
+        results,
+        gantt,
+        averageWaiting: results.reduce((sum, p) => sum + p.waiting, 0) / count,
+        averageTurnaround: results.reduce((sum, p) => sum + p.turnaround, 0) / count,
+        averageResponse: results.reduce((sum, p) => sum + p.response, 0) / count
+    };
+}
+
+function calculateSRTF(input) {
+    const jobs = input.map((process, index) => ({
+        ...process,
+        originalIndex: index,
+        remaining: process.burst,
+        firstStart: null,
+        completion: null
+    }));
+
+    const gantt = [];
+    let currentTime = 0;
+    let completed = 0;
+
+    while (completed < jobs.length) {
+        const available = jobs
+            .filter(p =>
+                p.arrival <= currentTime &&
+                p.remaining > 0
+            )
+            .sort((a, b) =>
+                a.remaining - b.remaining ||
+                a.arrival - b.arrival ||
+                a.originalIndex - b.originalIndex
+            );
+
+        if (available.length === 0) {
+            const nextArrival = Math.min(
+                ...jobs
+                    .filter(p => p.remaining > 0)
+                    .map(p => p.arrival)
+            );
+
+            gantt.push({
+                id: "Idle",
+                start: currentTime,
+                end: nextArrival
+            });
+
+            currentTime = nextArrival;
+            continue;
+        }
+
+        const process = available[0];
+
+        if (process.firstStart === null) {
+            process.firstStart = currentTime;
+        }
+
+        const previous = gantt[gantt.length - 1];
+
+        if (previous && previous.id === process.id) {
+            previous.end = currentTime + 1;
+        } else {
+            gantt.push({
+                id: process.id,
+                start: currentTime,
+                end: currentTime + 1
+            });
+        }
+
+        process.remaining--;
+        currentTime++;
+
+        if (process.remaining === 0) {
+            process.completion = currentTime;
+            completed++;
+        }
+    }
+
+    const results = jobs.map(process => {
+        const turnaround =
+            process.completion - process.arrival;
+
+        const waiting =
+            turnaround - process.burst;
+
+        const response =
+            process.firstStart - process.arrival;
+
+        return {
+            id: process.id,
+            arrival: process.arrival,
+            burst: process.burst,
+            start: process.firstStart,
+            completion: process.completion,
+            turnaround,
+            waiting,
+            response
+        };
+    });
+
+    const count = results.length;
+
+    return {
+        results,
+        gantt,
+        averageWaiting:
+            results.reduce((sum, p) => sum + p.waiting, 0) / count,
+        averageTurnaround:
+            results.reduce((sum, p) => sum + p.turnaround, 0) / count,
+        averageResponse:
+            results.reduce((sum, p) => sum + p.response, 0) / count
+    };
+}
+
+function getProcessColor(processId) {
+    const colors = [
+        "#789BB2", // Blue
+        "#82A68E", // Green
+        "#C9875B", // Orange
+        "#A58BB5", // Purple
+        "#D39A8C", // Dusty pink
+        "#9C705B", // Brown
+        "#8BA6A0"  // Teal
+    ];
+
+    if (processId === "Idle") {
+        return "#A9A19A";
+    }
+
+    const processNumber = Number(processId.replace("P", ""));
+    return colors[(processNumber - 1) % colors.length];
+}
+
+function renderComparisonGantt(result, title) {
+    const totalTime = result.gantt[result.gantt.length - 1].end;
+    const pixelPerUnit = 48;
+    const chartWidth = totalTime * pixelPerUnit;
+
+    return `
+        <section class="comparison-result">
+            <h3>${title}</h3>
+
+            <div class="gantt-scroll">
+                <div
+                    class="gantt-chart"
+                    style="width: ${chartWidth}px;"
+                >
+                    ${result.gantt.map(item => {
+                        const duration = item.end - item.start;
+
+                        return `
+                            <div
+                                class="gantt-item ${item.id === "Idle" ? "idle" : ""}"
+                                style="
+                                    flex: 0 0 ${duration * pixelPerUnit}px;
+                                    background: ${getProcessColor(item.id)};
+                                "
+                            >
+                                <strong>${item.id}</strong>
+                                <small>${item.start} – ${item.end}</small>
+                            </div>
+                        `;
+                    }).join("")}
+                </div>
+
+                <div
+                    class="gantt-timeline"
+                    style="width: ${chartWidth}px;"
+                >
+                    ${result.gantt.map(item => `
+                        <span style="
+                            flex: 0 0 ${(item.end - item.start) * pixelPerUnit}px;
+                        ">
+                            ${item.start}
+                        </span>
+                    `).join("")}
+
+                    <span class="final-time">${totalTime}</span>
+                </div>
+            </div>
+        </section>
+    `;
+}
+
+function renderComparison() {
+    const fcfs = comparisonResult.fcfs;
+    const srtf = comparisonResult.srtf;
+
+    // Match processes by ID so both algorithms
+    // display results in the original input order.
+    const processComparison = processes.map(process => {
+        const fcfsProcess = fcfs.results.find(
+            p => p.id === process.id
+        );
+
+        const srtfProcess = srtf.results.find(
+            p => p.id === process.id
+        );
+
+        return {
+            id: process.id,
+            fcfs: fcfsProcess,
+            srtf: srtfProcess
+        };
+    });
+
+    app.innerHTML = `
+        <header class="page-header">
+            <button class="back-button" onclick="returnFromResult()">
+                ‹
+            </button>
+
+            <div>
+                <p class="greeting">Hasil perbandingan</p>
+                <h1>FCFS vs SRTF</h1>
+            </div>
+        </header>
+
+        <section class="result-section">
+            <h2>Gantt Chart</h2>
+
+            <p class="section-description">
+                Perbandingan urutan eksekusi proses
+                menggunakan kedua algoritma.
+            </p>
+
+            ${renderComparisonGantt(fcfs, "FCFS")}
+
+            ${renderComparisonGantt(srtf, "SRTF")}
+        </section>
+
+        <section class="result-section">
+            <h2>Perbandingan Perhitungan</h2>
+
+            <p class="section-description">
+                Hasil perhitungan setiap proses berdasarkan
+                algoritma yang digunakan.
+            </p>
+
+            <div class="table-wrapper">
+                <table class="result-table comparison-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Proses</th>
+                            <th colspan="2">CT</th>
+                            <th colspan="2">TAT</th>
+                            <th colspan="2">WT</th>
+                            <th colspan="2">RT</th>
+                        </tr>
+
+                        <tr>
+                            <th>F</th>
+                            <th>S</th>
+                            <th>F</th>
+                            <th>S</th>
+                            <th>F</th>
+                            <th>S</th>
+                            <th>F</th>
+                            <th>S</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${processComparison.map(item => `
+                            <tr>
+                                <td>${item.id}</td>
+
+                                <td>${item.fcfs.completion}</td>
+                                <td>${item.srtf.completion}</td>
+
+                                <td>${item.fcfs.turnaround}</td>
+                                <td>${item.srtf.turnaround}</td>
+
+                                <td>${item.fcfs.waiting}</td>
+                                <td>${item.srtf.waiting}</td>
+
+                                <td>${item.fcfs.response}</td>
+                                <td>${item.srtf.response}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="table-note">
+                F = FCFS | S = SRTF
+            </p>
+        </section>
+
+        <section class="average-card">
+            <h2>Perbandingan Rata-rata</h2>
+
+            <div class="average-comparison-header">
+                <span>Metrik</span>
+                <span>FCFS</span>
+                <span>SRTF</span>
+            </div>
+
+            ${renderAverageComparison(
+                "Waiting Time",
+                fcfs.averageWaiting,
+                srtf.averageWaiting
+            )}
+
+            ${renderAverageComparison(
+                "Turnaround Time",
+                fcfs.averageTurnaround,
+                srtf.averageTurnaround
+            )}
+
+            ${renderAverageComparison(
+                "Response Time",
+                fcfs.averageResponse,
+                srtf.averageResponse
+            )}
+        </section>
+
+        <section class="comparison-note">
+            <h3>Kesimpulan</h3>
+
+            <p>
+                ${getComparisonConclusion(fcfs, srtf)}
+            </p>
+        </section>
+
+        <button class="primary-button" onclick="returnFromResult()">
+            ${viewingHistory ? "Kembali ke Riwayat" : "Kembali ke Input"}
+        </button>
+
+        ${renderNavigation("")}
+    `;
+}
+
+function renderAverageComparison(label, fcfs, srtf) {
+    const difference = Math.abs(fcfs - srtf);
+    const winner = fcfs < srtf ? "FCFS" :
+                   srtf < fcfs ? "SRTF" : "Sama";
+
+    return `
+        <div class="average-comparison-row">
+            <span>${label}</span>
+
+            <strong>${fcfs.toFixed(2)}</strong>
+
+            <strong>${srtf.toFixed(2)}</strong>
+        </div>
+
+        <p class="metric-winner">
+            ${winner === "Sama"
+                ? "Hasil kedua algoritma sama."
+                : `${winner} lebih rendah sebesar ${difference.toFixed(2)}.`
+            }
+        </p>
+    `;
+}
+
+function getComparisonConclusion(fcfs, srtf) {
+    const fcfsWT = fcfs.averageWaiting;
+    const srtfWT = srtf.averageWaiting;
+
+    if (fcfsWT < srtfWT) {
+        return "Pada data proses ini, FCFS menghasilkan rata-rata Waiting Time yang lebih rendah dibandingkan SRTF.";
+    }
+
+    if (srtfWT < fcfsWT) {
+        return "Pada data proses ini, SRTF menghasilkan rata-rata Waiting Time yang lebih rendah dibandingkan FCFS.";
+    }
+
+    return "Pada data proses ini, FCFS dan SRTF menghasilkan rata-rata Waiting Time yang sama.";
+}
+
+function returnFromResult() {
+    if (viewingHistory) {
+        viewingHistory = false;
+        renderHistory();
+    } else {
+        renderInput();
+    }
+}
+
+function renderResults() {
+    const result = lastResult;
+    const totalTime = result.gantt[result.gantt.length - 1].end;
+    const pixelPerUnit = 48;
+    const chartWidth = totalTime * pixelPerUnit;
+
+    app.innerHTML = `
+        <header class="page-header">
+            <button class="back-button" onclick="returnFromResult()">‹</button>
+            <div>
+                <p class="greeting">Hasil simulasi</p>
+                <h1>${selectedAlgorithm}</h1>
+            </div>
+        </header>
+
+        <section class="result-section">
+            <h2>Gantt Chart</h2>
+            <p class="section-description">
+                Urutan eksekusi proses pada CPU.
+            </p>
+
+            <div class="gantt-scroll">
+                <div class="gantt-chart" style="width: ${chartWidth}px;">
+                    ${result.gantt.map(item => {
+                        const duration = item.end - item.start;
+
+                        return `
+                            <div
+                                class="gantt-item ${item.id === "Idle" ? "idle" : ""}"
+                                style="
+                                    flex: 0 0 ${duration * pixelPerUnit}px;
+                                    background: ${getProcessColor(item.id)};
+                                "
+                            >
+                                <strong>${item.id}</strong>
+                                <small>${item.start} – ${item.end}</small>
+                            </div>
+                        `;
+                    }).join("")}
+                </div>
+
+                <div class="gantt-timeline" style="width: ${chartWidth}px;">
+                    ${result.gantt.map(item => {
+                        const duration = item.end - item.start;
+
+                        return `
+                            <span style="flex: 0 0 ${duration * pixelPerUnit}px;">
+                                ${item.start}
+                            </span>
+                        `;
+                    }).join("")}
+
+                    <span class="final-time">
+                        ${totalTime}
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <section class="result-section">
+            <h2>Hasil Perhitungan</h2>
+
+            <div class="table-wrapper">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Proses</th>
+                            <th>AT</th>
+                            <th>BT</th>
+                            <th>CT</th>
+                            <th>TAT</th>
+                            <th>WT</th>
+                            <th>RT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${result.results.map(p => `
+                            <tr>
+                                <td>${p.id}</td>
+                                <td>${p.arrival}</td>
+                                <td>${p.burst}</td>
+                                <td>${p.completion}</td>
+                                <td>${p.turnaround}</td>
+                                <td>${p.waiting}</td>
+                                <td>${p.response}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="average-card">
+            <h2>Rata-rata</h2>
+
+            <div class="average-row">
+                <span>Waiting Time</span>
+                <strong>${result.averageWaiting.toFixed(2)}</strong>
+            </div>
+
+            <div class="average-row">
+                <span>Turnaround Time</span>
+                <strong>${result.averageTurnaround.toFixed(2)}</strong>
+            </div>
+
+            <div class="average-row">
+                <span>Response Time</span>
+                <strong>${result.averageResponse.toFixed(2)}</strong>
+            </div>
+        </section>
+
+        <button class="primary-button" onclick="returnFromResult()">
+            ${viewingHistory ? "Kembali ke Riwayat" : "Kembali ke Input"}
+        </button>
+
+        ${renderNavigation("")}
+    `;
+}
+
+function navigate(page) {
+    if (page === "home") {
+        renderHome();
+    } else if (page === "history") {
+        renderHistory();
+    } else if (page === "about") {
+        alert("Halaman Tentang AVIRA akan kita buat selanjutnya.");
+    }
+}
+
+renderHome();

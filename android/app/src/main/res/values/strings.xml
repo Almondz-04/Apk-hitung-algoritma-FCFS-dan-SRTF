@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AVIRA</string>
+    <string name="title_activity_main">AVIRA</string>
+    <string name="package_name">com.kelompok1.avira</string>
+    <string name="custom_url_scheme">com.kelompok1.avira</string>
+</resources>

@@ -1,0 +1,1044 @@
+/* Styles */
+:root {
+    /* Palet Warna Utama */
+    --primary: #6B4333;
+    --secondary: #9C705B;
+    --accent: #C9875B;
+    --background: #F7F1E9;
+    --text: #211E16;
+    --card: #FFFCF8;
+    --soft-beige: #EAD9C0;
+
+    /* Warna Algoritma Sesuai */
+    --fcfs-bg: #E2E9EC;
+    --fcfs-icon: #7296A6;
+    --srtf-bg: #E2EFE9;
+    --srtf-icon: #5F9E82;
+    --comparison-bg: #EFE6DE;
+    --comparison-icon: #A66D4F;
+
+    /* Tipografi */
+    --font-heading: 'Poppins', sans-serif;
+    --font-body: 'Montserrat', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--background);
+    color: var(--text);
+    font-family: var(--font-body);
+}
+
+/* Framework Pembungkus Layar Mobile HP Android */
+.app-container {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 32px 22px 100px;
+}
+
+/* Utility untuk menyembunyikan scrollbar horizontal tetapi fitur scroll tetap aktif */
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE & Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Splash Screen */
+#splash-screen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: #f4eae1 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 999999 !important;
+    transition: opacity 0.5s ease;
+    overflow: hidden;
+}
+
+/* Saat opacity 0, matikan fungsi pointer agar tidak menghalangi klik ke tombol di belakangnya */
+#splash-screen[style*="opacity: 0"] {
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+/* Gambar background gelombang cokelat */
+.splash-bg-img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    z-index: 1 !important;
+}
+
+/* Konten Logo & Progress Bar */
+.splash-content {
+    position: relative !important;
+    z-index: 2 !important;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.splash-logo {
+    width: 140px;
+    height: auto;
+    margin-bottom: 8px;
+}
+
+.splash-subtitle {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    color: #5a483c;
+    margin-top: 4px;
+    margin-bottom: 30px;
+}
+
+.splash-loader {
+    width: 180px;
+    height: 4px;
+    background-color: #e2d5c8;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.splash-progress {
+    width: 40%;
+    height: 100%;
+    background-color: #5c3a21;
+    border-radius: 4px;
+    animation: loading 1.5s ease-in-out infinite;
+}
+
+/* Animasi Kemunculan Bertahap (Fade In & Slide Up) */
+.fade-element {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s forwards ease-out;
+}
+
+.delay-1 { animation-delay: 0.4s; }
+.delay-2 { animation-delay: 0.8s; }
+.delay-3 { animation-delay: 1.2s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+}
+
+/* Beranda */
+.welcome {
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
+
+.logo-small {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.logo-small img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.greeting {
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #555555;
+}
+
+.welcome h1 {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    line-height: 1.35;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+}
+
+.description {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #665B52;
+    max-width: 310px;
+}
+
+.algorithm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.algorithm-card {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 86px;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text);
+    font-family: var(--font-body);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.algorithm-card:active {
+    transform: scale(0.98);
+}
+
+/* Latar Belakang Kartu Beranda Sesuai Algoritma */
+.fcfs { background: var(--fcfs-bg) !important; }
+.srtf { background: var(--srtf-bg) !important; }
+.comparison { background: var(--comparison-bg) !important; }
+
+/* Container Ikon Kartu Beranda */
+.algorithm-icon {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    color: #ffffff !important;
+    margin-right: 14px !important;
+}
+
+.fcfs-icon { background: var(--fcfs-icon) !important; }
+.srtf-icon { background: var(--srtf-icon) !important; }
+.comparison-icon { background: var(--comparison-icon) !important; }
+
+.algorithm-info {
+    flex: 1;
+}
+
+.algorithm-info h2 {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+}
+
+.algorithm-info p {
+    font-size: 11px;
+    line-height: 1.4;
+    color: #555555;
+}
+
+.arrow {
+    font-size: 24px;
+    color: #633D29;
+}
+
+/* Navigation Bar */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #ffffff;
+    border-top: 1px solid #EADFD2;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: #8D8177;
+    cursor: pointer;
+    font-family: var(--font-body);
+}
+
+.nav-item span {
+    font-size: 22px;
+}
+
+.nav-item small {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.nav-item.active {
+    color: #633D29;
+}
+
+/* Input Proses */
+.figma-header {
+    margin-bottom: 20px;
+    position: relative;
+    width: 100%;
+}
+
+.figma-header.centered-header {
+    text-align: center;
+}
+
+.figma-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    text-align: center;
+}
+
+.selected-algo-card {
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.algo-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.algo-card-details h2 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 2px 0;
+}
+
+.algo-card-details p {
+    font-size: 11px;
+    color: #555555;
+    margin: 0;
+}
+
+.figma-section {
+    margin-bottom: 24px;
+}
+
+.figma-section-title {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* Tombol Pengatur Jumlah Proses (+ / -) */
+.counter-control {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.btn-count-minus,
+.btn-count-plus {
+    background-color: #633D29;
+    color: #ffffff;
+    border: none;
+    width: 50px;
+    height: 46px;
+    font-size: 22px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.counter-number-input {
+    flex: 1;
+    border: none;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    outline: none;
+    background: transparent;
+}
+
+.counter-hint {
+    font-size: 10px;
+    color: #777777;
+    margin-top: 6px;
+}
+
+/* Tabel Input Data Proses */
+.process-table-container {
+    width: 100%;
+}
+
+.figma-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.figma-table th {
+    background-color: #EBDDCB;
+    padding: 10px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #333333;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.figma-table th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.figma-table th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+.process-name-cell {
+    font-weight: 700;
+    font-size: 16px;
+    text-align: center;
+    color: #1a1a1a;
+}
+
+.figma-input-cell {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #E2D5C8;
+    border-radius: 8px;
+    background: #ffffff;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    outline: none;
+}
+
+.figma-input-cell:focus {
+    border-color: #633D29;
+}
+
+/* Tombol "Hitung Sekarang" */
+.btn-hitung-sekarang {
+    width: 100%;
+    background-color: #633D29;
+    color: #ffffff;
+    border: none;
+    height: 50px;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Modal Pop-up Konfirmasi (Peringatan Hapus Proses & Bersihkan Riwayat) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    padding: 20px;
+}
+
+.modal-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.modal-warning-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.modal-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.modal-desc {
+    font-size: 11px;
+    line-height: 1.5;
+    color: #666666;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-modal-cancel {
+    flex: 1;
+    background-color: #EBDDCB;
+    color: #4A3525;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-modal-danger {
+    flex: 1;
+    background-color: #633D29;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Hasil Simulasi dan Gantt Chart */
+.result-head-section {
+    margin-bottom: 20px;
+}
+
+.result-algo-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0 0 2px 0;
+}
+
+.result-algo-sub {
+    font-size: 12px;
+    color: #666666;
+    margin: 0 0 8px 0;
+}
+
+/* Badge Status Preemptive / Non-Preemptive */
+.algo-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.badge-fcfs { background-color: #BBE0F5; color: #1F5275; }
+.badge-srtf { background-color: #C6E9D5; color: #1E5936; }
+
+.figma-card-box {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.card-box-title,
+.gantt-sub-label {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+/* Bar Visual Gantt Chart */
+.gantt-figma-wrapper {
+    width: 100%;
+}
+
+.gantt-figma-bar {
+    display: flex;
+    height: 42px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gantt-figma-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.gantt-figma-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #666666;
+    margin-top: 6px;
+    padding: 0 2px;
+}
+
+.section-subtitle-title {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+/* Grid Kartu Rata-rata Statistik */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.stat-card.full-width {
+    grid-column: span 2;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: #777777;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* Tabel Detail & Perbandingan Hasil Kalkulasi */
+.table-card-container {
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.figma-detail-table,
+.figma-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.figma-detail-table th,
+.figma-comparison-table th {
+    background-color: transparent;
+    padding: 12px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #777777;
+    text-align: center;
+    border-bottom: 1px solid #F0E8DD;
+}
+
+.figma-detail-table td,
+.figma-comparison-table td {
+    padding: 12px 8px;
+    font-size: 13px;
+    text-align: center;
+    color: #1a1a1a;
+    border-bottom: 1px solid #F7F1E9;
+}
+
+.figma-detail-table tr:last-child td,
+.figma-comparison-table tr:last-child td {
+    border-bottom: none;
+}
+
+.metric-name-cell {
+    text-align: left !important;
+    padding-left: 16px !important;
+    font-weight: 600;
+}
+
+.formula-legend {
+    font-size: 9px;
+    color: #888888;
+    margin-top: 10px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+/* Kartu Analisis Kesimpulan Hasil */
+.analysis-card {
+    background-color: #CDE8D8;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+}
+
+.analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2D6343;
+    margin-bottom: 6px;
+}
+
+.analysis-header h3 {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.analysis-card p {
+    font-size: 11px;
+    color: #2D6343;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Tombol Aksi di Bagian Bawah */
+.action-buttons-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    margin-bottom: 30px;
+}
+
+.btn-action-brown {
+    flex: 1;
+    background-color: #633D29;
+    color: #ffffff;
+    border: none;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.2;
+    padding: 6px 12px;
+}
+
+.btn-action-brown:active {
+    opacity: 0.9;
+}
+
+/* Riwayat dan Detail Riwayat */
+/* Tombol Ikon Sampah  */
+.btn-clear-history-icon {
+    background: none;
+    border: none;
+    color: #A44F3B;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.btn-clear-history-icon:hover {
+    background-color: #F3DFD8;
+}
+
+.btn-clear-history-icon:active {
+    transform: scale(0.92);
+}
+
+/* Input Pencarian Riwayat */
+.search-box-container {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.search-input {
+    width: 100%;
+    height: 44px;
+    background: #ffffff;
+    border: 1px solid #EADDCB;
+    border-radius: 12px;
+    padding: 0 16px 0 42px;
+    font-size: 13px;
+    color: #1a1a1a;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #888888;
+}
+
+/* Filter Chips (Semua, FCFS, SRTF, Bandingkan) */
+.filter-chips-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.chip-btn {
+    background-color: #EFE6DE;
+    color: #633D29;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.chip-btn.active {
+    background-color: #633D29;
+    color: #ffffff;
+}
+
+/* Daftar Kartu Riwayat */
+.history-header-aligned {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-spacer {
+    width: 32px;
+}
+
+.header-action-slot {
+    width: 32px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.history-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.history-item-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.history-item-card:active {
+    transform: scale(0.98);
+}
+
+.history-item-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.history-item-info {
+    flex: 1;
+}
+
+.history-item-info h3 {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 2px 0;
+}
+
+.history-item-date {
+    font-size: 11px;
+    color: #777777;
+    margin: 0 0 2px 0;
+}
+
+.history-item-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.history-item-arrow {
+    font-size: 20px;
+    color: #888888;
+}
+
+/* Tampilan Cell Mode Readonly di Halaman Detail Riwayat */
+.figma-input-cell-view {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #E2D5C8;
+    border-radius: 8px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.empty-history-state {
+    text-align: center;
+    padding: 30px 10px;
+    color: #777777;
+    font-size: 13px;
+}
+
+/* Tentang AVIRA */
+.about-header {
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 35px;
+}
+
+.about-header h1 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.about-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.about-logo {
+    display: block;
+    width: 150px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.about-subtitle {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 500;
+    margin-top: 10px;
+    color: var(--text);
+}
+
+.about-description {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+    margin-top: 28px;
+    margin-bottom: 40px;
+}
+
+.team-card {
+    background: #ffffff;
+    border: 1px solid #EAD9C0;
+    border-radius: 12px;
+    padding: 16px 24px;
+    width: 100%;
+}
+
+.team-card h2 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+
+.team-card ul {
+    list-style: none;
+}
+
+.team-card li {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+}
